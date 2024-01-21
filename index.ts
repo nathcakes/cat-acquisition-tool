@@ -17,7 +17,10 @@ const catScraper = async () => {
     const browserContext = await browser.newContext(devices["Desktop Chrome"]);
     const page = await browserContext.newPage();
     const networkResults = os.networkInterfaces();
-    await fetch('https://ntfy.sh/cat-error-reporter', {
+  const currentHour = new Date().getHours();
+	const currentMin = new Date().getMinutes();
+if ((currentHour % 2 === 0) && (currentMin > 25) && (currentMin < 35)){ 
+ await fetch('https://ntfy.sh/cat-error-reporter', {
         method: 'POST',
         //@ts-ignore
         body: `RaspberryPi Online @${networkResults.wlan0[0].address}`,
@@ -27,6 +30,7 @@ const catScraper = async () => {
 		'Priority': 'min'
         }
     })
+}
     //get the browser to load all the cats onto the page
     page.route("**/*.{png,jpg,jpeg}", route => route.abort());
     await page.goto(searchUrl);
@@ -45,10 +49,11 @@ const catScraper = async () => {
         //skip seen cats
         if ((href === null) || (previousCats.includes(href))) continue;
         const catName = await cat.locator("h3").innerText();
+	const catBreed = await cat.locator("p").innerText();
         //notify new cats
         await fetch('https://ntfy.sh/rspcawa-cat-acquisition-tool', {
             method: 'POST',
-            body: `${catName.split(" ")[0]} is now available. Check this link: ${href}`,
+            body: `${catName.split("-")[0]} is now available. The breed is ${catBreed}. Check this link: ${href}`,
             headers: {
                 'Title': 'New cat found!',
                 'Tags': 'heart_eyes_cat',

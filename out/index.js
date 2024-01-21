@@ -23,14 +23,19 @@ const catScraper = () => __awaiter(void 0, void 0, void 0, function* () {
     const browserContext = yield browser.newContext(devices["Desktop Chrome"]);
     const page = yield browserContext.newPage();
     const networkResults = os.networkInterfaces();
-    yield fetch('https://ntfy.sh/cat-error-reporter', {
-        method: 'POST',
-        body: `RaspberryPi Online @${networkResults.wlan0[0].address}`,
-        headers: {
-            'Title': 'Pi Online',
-            'Tags': 'desktop_computer'
-        }
-    });
+    const currentHour = new Date().getHours();
+    const currentMin = new Date().getMinutes();
+    if ((currentHour % 2 === 0) && (currentMin > 25) && (currentMin < 35)) {
+        yield fetch('https://ntfy.sh/cat-error-reporter', {
+            method: 'POST',
+            body: `RaspberryPi Online @${networkResults.wlan0[0].address}`,
+            headers: {
+                'Title': 'Pi Online',
+                'Tags': 'desktop_computer',
+                'Priority': 'min'
+            }
+        });
+    }
     page.route("**/*.{png,jpg,jpeg}", route => route.abort());
     yield page.goto(searchUrl);
     yield page.waitForTimeout(20000);
@@ -47,9 +52,10 @@ const catScraper = () => __awaiter(void 0, void 0, void 0, function* () {
         if ((href === null) || (previousCats.includes(href)))
             continue;
         const catName = yield cat.locator("h3").innerText();
+        const catBreed = yield cat.locator("p").innerText();
         yield fetch('https://ntfy.sh/rspcawa-cat-acquisition-tool', {
             method: 'POST',
-            body: `${catName.split(" ")[0]} is now available. Check this link: ${href}`,
+            body: `${catName.split("-")[0]} is now available. The breed is ${catBreed}. Check this link: ${href}`,
             headers: {
                 'Title': 'New cat found!',
                 'Tags': 'heart_eyes_cat',

@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@playwright/browser-chromium": "^1.41.1",
+    "playwright": "^1.41.1",
+    "toad-scheduler": "^3.0.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  },
+    "scripts": {
+        "start": "node out/index.js"
+    }
+}

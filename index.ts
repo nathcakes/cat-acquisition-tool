@@ -23,7 +23,8 @@ const catScraper = async () => {
         body: `RaspberryPi Online @${networkResults.wlan0[0].address}`,
         headers: {
             'Title': 'Pi Online',
-            'Tags': 'desktop_computer'
+            'Tags': 'desktop_computer',
+		'Priority': 'min'
         }
     })
     //get the browser to load all the cats onto the page

@@ -8,3 +8,9 @@ Scrape completed Sun Jan 21 2024 19:07:11 GMT+0800 (Australian Western Standard 
 Scrape completed Sun Jan 21 2024 19:12:12 GMT+0800 (Australian Western Standard Time)
 Scrape completed Sun Jan 21 2024 19:17:12 GMT+0800 (Australian Western Standard Time)
 Scrape completed Sun Jan 21 2024 19:22:12 GMT+0800 (Australian Western Standard Time)
+npm ERR! Missing script: "script"
+npm ERR! 
+npm ERR! To see a list of scripts, run:
+npm ERR!   npm run
+
+npm ERR! A complete log of this run can be found in: /home/nate-pi/.npm/_logs/2024-01-21T12_08_02_499Z-debug-0.log

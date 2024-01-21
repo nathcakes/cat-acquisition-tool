@@ -2,9 +2,10 @@ import {chromium, devices} from "playwright";
 import {writeFileSync, readFileSync} from "fs";
 import {ToadScheduler, SimpleIntervalJob, AsyncTask} from "toad-scheduler";
 import * as process from "process";
+import * as os from 'os';
 
 const readCatFile = () => {
-    const file = readFileSync("./cats.txt");
+    const file = readFileSync("/home/nate-pi/code/cat-acquisition-tool/cats.txt");
     return file.toString().split("\n");
 }
 
@@ -15,11 +16,25 @@ const catScraper = async () => {
     const browser = await chromium.launch({headless: true});
     const browserContext = await browser.newContext(devices["Desktop Chrome"]);
     const page = await browserContext.newPage();
+    const networkResults = os.networkInterfaces();
+    await fetch('https://ntfy.sh/cat-error-reporter', {
+        method: 'POST',
+        //@ts-ignore
+        body: `RaspberryPi Online @${networkResults.wlan0[0].address}`,
+        headers: {
+            'Title': 'Pi Online',
+            'Tags': 'desktop_computer'
+        }
+    })
     //get the browser to load all the cats onto the page
+    page.route("**/*.{png,jpg,jpeg}", route => route.abort());
     await page.goto(searchUrl);
-    await page.waitForTimeout(6000);
-    await page.getByText("Search more ").click();
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(20000);
+    const searchMore = page.getByText("Search more ");
+    if (await searchMore.isVisible()){
+        await searchMore.click();
+        await page.waitForTimeout(20000);
+    }
     const cats = page.locator("#pets")
     const data = [];
     //grab all the cats once they have loaded in
@@ -39,7 +54,7 @@ const catScraper = async () => {
                 'Priority': 'high'
             }
         })
-        writeFileSync("./cats.txt", href + "\n", {flag: "a"});
+        writeFileSync("/home/nate-pi/code/cat-acquisition-tool/cats.txt", href + "\n", {flag: "a"});
 
     }
         //finish
@@ -53,7 +68,7 @@ const scheduler = new ToadScheduler();
 const task = new AsyncTask('cat scraping',
     catScraper,
     async (err: Error) => {
-        await fetch('https://ntfy.sh/rspcawa-cat-acquisition-tool', {
+        await fetch('https://ntfy.sh/cat-error-reporter', {
             method: 'POST',
             body: `Error: ${err}`,
             headers: {
@@ -62,6 +77,7 @@ const task = new AsyncTask('cat scraping',
                 'Priority': 'high'
             }
         })
+        console.log(err);
         scheduler.stop();
         process.exit(1);
         });
@@ -72,6 +88,7 @@ const job = new SimpleIntervalJob(
 )
 
 scheduler.addSimpleIntervalJob(job);
-
+//console.log(`Running, ip is ${ip.address}`)
 //keep the process running
+//@ts-ignore
 setInterval(() => {}, 1 << 30);

@@ -11,8 +11,9 @@ import { chromium, devices } from "playwright";
 import { writeFileSync, readFileSync } from "fs";
 import { ToadScheduler, SimpleIntervalJob, AsyncTask } from "toad-scheduler";
 import * as process from "process";
+import * as os from 'os';
 const readCatFile = () => {
-    const file = readFileSync("./cats.txt");
+    const file = readFileSync("/home/nate-pi/code/cat-acquisition-tool/cats.txt");
     return file.toString().split("\n");
 };
 const catScraper = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -21,10 +22,23 @@ const catScraper = () => __awaiter(void 0, void 0, void 0, function* () {
     const browser = yield chromium.launch({ headless: true });
     const browserContext = yield browser.newContext(devices["Desktop Chrome"]);
     const page = yield browserContext.newPage();
+    const networkResults = os.networkInterfaces();
+    yield fetch('https://ntfy.sh/cat-error-reporter', {
+        method: 'POST',
+        body: `RaspberryPi Online @${networkResults.wlan0[0].address}`,
+        headers: {
+            'Title': 'Pi Online',
+            'Tags': 'desktop_computer'
+        }
+    });
+    page.route("**/*.{png,jpg,jpeg}", route => route.abort());
     yield page.goto(searchUrl);
-    yield page.waitForTimeout(6000);
-    yield page.getByText("Search more ").click();
-    yield page.waitForTimeout(10000);
+    yield page.waitForTimeout(20000);
+    const searchMore = page.getByText("Search more ");
+    if (yield searchMore.isVisible()) {
+        yield searchMore.click();
+        yield page.waitForTimeout(20000);
+    }
     const cats = page.locator("#pets");
     const data = [];
     const catContainers = yield cats.locator('[class="pet row-5"]').all();
@@ -42,14 +56,14 @@ const catScraper = () => __awaiter(void 0, void 0, void 0, function* () {
                 'Priority': 'high'
             }
         });
-        writeFileSync("./cats.txt", href + "\n", { flag: "a" });
+        writeFileSync("/home/nate-pi/code/cat-acquisition-tool/cats.txt", href + "\n", { flag: "a" });
     }
     console.log(`Scrape completed ${new Date()}`);
     yield browser.close();
 });
 const scheduler = new ToadScheduler();
 const task = new AsyncTask('cat scraping', catScraper, (err) => __awaiter(void 0, void 0, void 0, function* () {
-    yield fetch('https://ntfy.sh/rspcawa-cat-acquisition-tool', {
+    yield fetch('https://ntfy.sh/cat-error-reporter', {
         method: 'POST',
         body: `Error: ${err}`,
         headers: {
@@ -58,6 +72,7 @@ const task = new AsyncTask('cat scraping', catScraper, (err) => __awaiter(void 0
             'Priority': 'high'
         }
     });
+    console.log(err);
     scheduler.stop();
     process.exit(1);
 }));

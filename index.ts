@@ -19,7 +19,7 @@ const catScraper = async () => {
     const networkResults = os.networkInterfaces();
   const currentHour = new Date().getHours();
 	const currentMin = new Date().getMinutes();
-if ((currentHour % 2 === 0) && (currentMin > 25) && (currentMin < 35)){ 
+if ((currentHour % 2 === 0) && (currentMin > 30) && (currentMin < 35)){ 
  await fetch('https://ntfy.sh/cat-error-reporter', {
         method: 'POST',
         //@ts-ignore
@@ -84,8 +84,6 @@ const task = new AsyncTask('cat scraping',
             }
         })
         console.log(err);
-        scheduler.stop();
-        process.exit(1);
         });
 const job = new SimpleIntervalJob(
     {minutes: 5},

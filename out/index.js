@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 import { chromium, devices } from "playwright";
 import { writeFileSync, readFileSync } from "fs";
 import { ToadScheduler, SimpleIntervalJob, AsyncTask } from "toad-scheduler";
-import * as process from "process";
 import * as os from 'os';
 const readCatFile = () => {
     const file = readFileSync("/home/nate-pi/code/cat-acquisition-tool/cats.txt");
@@ -25,7 +24,7 @@ const catScraper = () => __awaiter(void 0, void 0, void 0, function* () {
     const networkResults = os.networkInterfaces();
     const currentHour = new Date().getHours();
     const currentMin = new Date().getMinutes();
-    if ((currentHour % 2 === 0) && (currentMin > 25) && (currentMin < 35)) {
+    if ((currentHour % 2 === 0) && (currentMin > 30) && (currentMin < 35)) {
         yield fetch('https://ntfy.sh/cat-error-reporter', {
             method: 'POST',
             body: `RaspberryPi Online @${networkResults.wlan0[0].address}`,
@@ -79,8 +78,6 @@ const task = new AsyncTask('cat scraping', catScraper, (err) => __awaiter(void 0
         }
     });
     console.log(err);
-    scheduler.stop();
-    process.exit(1);
 }));
 const job = new SimpleIntervalJob({ minutes: 5 }, task, { id: 'id_1', preventOverrun: true });
 scheduler.addSimpleIntervalJob(job);

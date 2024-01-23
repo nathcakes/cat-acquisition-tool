@@ -569,3 +569,7 @@ Call log:
     at fulfilled (/home/nate-pi/code/cat-acquisition-tool/out/index.js:4:58) {
   name: 'TimeoutError'
 }
+
+> start
+> node out/index.js
+
